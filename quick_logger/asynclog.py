@@ -9,7 +9,7 @@ from functools import wraps  # 保留原函数元信息，关键！
 
 # ===================== 路径与配置初始化 =====================
 # 定义路径常量，跨平台兼容
-LOG_ROOT = os.path.join(os.getcwd(), "Logger")
+LOG_ROOT = os.path.join(os.getcwd(), "Logs")
 CONFIG_DIR = os.path.join(LOG_ROOT, ".config")
 CONFIG_PATH = os.path.join(CONFIG_DIR, "Config.json")
 

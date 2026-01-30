@@ -2,6 +2,10 @@
 All notable changes to `quick-logger` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.6] - 2026-01-30
+### Fixed
+- ✅ Fixed error: DIR Name in ``asynclog.py`` wrong.
+
 ## [0.3.5] - 2026-01-30
 ### Added
 - ✅ Added ``enable_color`` column in Config file.
