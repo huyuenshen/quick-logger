@@ -47,9 +47,14 @@ Logger/
 *.swp
 *.swo
 
+test/
+pytest.ini
+.pytest_cache/
+
 # -------------------------- 项目专属忽略（quick-logger） --------------------------
 # 一键上传脚本的运行缓存（可选，若不需要提交脚本运行日志可添加）
 *.log
+Logs/
 upload.log
 
 # Windows 系统生成的无用文件
