@@ -115,7 +115,8 @@ def start_logger(func):
                 error_info = f"Function [{func.__name__}] error: {str(e)}"
                 error_info += f"{RESET}\n{traceback.format_exc()}"
                 # 异步记录异常
-                await logger.log(error_info, typ=3 if type(e) in [ValueError, TypeError, SyntaxError] else 4)
+                await logger.log(error_info, typ=4 if type(e) in [ImportError, SyntaxError, ModuleNotFoundError, OSError, FileNotFoundError, MemoryError, ConnectionRefusedError,
+                                                  PermissionError, AssertionError] else 3)
                 raise
             finally:
                 del frame  # 释放栈帧，避免内存泄漏
