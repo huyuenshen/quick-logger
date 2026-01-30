@@ -39,10 +39,10 @@ pip install quick-logger-colorful
 ## Quick Start
 ### 1. Sync Logging (Core Module)
 ```python
-from quick_logger import Datalog, start_logger
+from quick_logger import Logger, start_logger
 
 # Initialize logger
-logger = Datalog()
+logger = Logger()
 
 # Log messages of different levels
 logger.log("This is a DEBUG message", typ=0)
@@ -71,7 +71,7 @@ import asyncio
 from quick_logger import asynclog
 
 async def async_test_func():
-    logger = asynclog.Datalog()
+    logger = asynclog.Logger()
     await logger.log("This is an async INFO message", typ=1)
     await logger.log("This is an async FATAL message", typ=4)  # Async FATAL log
     await asyncio.sleep(1)  # Simulate async work (non-blocking)
@@ -98,11 +98,11 @@ if __name__ == "__main__":
 
 ## Configuration
 ### Auto-generated Config File
-On first run, a configuration file is created at `./Datalog/.config/Config.json` with the following default content:
+On first run, a configuration file is created at `./Logger/.config/Config.json` with the following default content:
 ```json
 {
     "pattern": "[{time}][{func}][{level}]:{msg}",
-    "file": "./Datalog/{date}.log.txt"
+    "file": "./Logger/{date}.log.txt"
 }
 ```
 
