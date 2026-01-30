@@ -20,16 +20,17 @@ os.makedirs(CONFIG_DIR, exist_ok=True)
 # 默认配置（把file里的{time}改为{date}，语义更清晰）
 DEFAULT_CONF = {
     "pattern": "[{time}][{func}][{type}]:{inform}",
-    "file": os.path.join(LOG_ROOT, "{date}.log.txt")
+    "file": os.path.join(LOG_ROOT, "{date}.log.txt"),
+    "enable_color": True
 }
 
 # 初始化配置文件（不存在则创建）
 if not os.path.exists(CONFIG_PATH):
-    with open(CONFIG_PATH, 'w', encoding='cp1252') as f:
+    with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
         json.dump(DEFAULT_CONF, f, indent=4)  # 格式化配置，方便手动修改
 
 # 读取配置
-with open(CONFIG_PATH, 'r', encoding='cp1252') as f:
+with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
     conf = json.load(f)
 
 # 日志级别控制（-O参数启用生产模式，只显示INFO及以上）
@@ -71,23 +72,23 @@ class Logger(object):
         return func_name
 
     async def log(self, data, typ=1):
-        # 映射日志级别
         type_map = {0: "DEBUG", 1: "INFO", 2: "WARN", 3: "ERROR", 4: "FATAL"}
         log_type = type_map.get(typ, "DEBUG")
-
-        # 级别过滤：低于设定级别的日志不输出
+        if conf["enable_color"]:
+            color=COLORS[log_type]
+            rst=RESET
+        else:
+            color=""
+            rst=""
         if typ >= level:
-            # 获取函数名（同步操作，不需要异步）
-            func_name = self._get_real_func_name()
             log_content = self.pattern.format(
                 time=datetime.datetime.now().strftime(r"%Y-%m-%d %H:%M:%S"),
-                func=func_name,
+                func=self._get_real_func_name(),
                 type=log_type,
                 inform=data
             )
-            # 终端带颜色输出（使用 run_in_executor 避免阻塞事件循环）
             loop = asyncio.get_running_loop()
-            await loop.run_in_executor(None, print, f"{COLORS[log_type]}{log_content}{RESET}")
+            await loop.run_in_executor(None, print, f"{color}{log_content}{rst}")
             # 文件输出（使用 run_in_executor 避免阻塞事件循环）
             def write_to_file():
                 print(log_content, file=self.file, flush=True)
@@ -142,10 +143,12 @@ def start_logger(func):
                     # 尝试获取运行中的事件循环
                     loop = asyncio.get_running_loop()
                     # 如果有运行中的循环，创建任务（不等待完成）
-                    asyncio.create_task(logger.log(error_info, typ=3 if type(e) in [ValueError, TypeError, SyntaxError] else 4))
+                    asyncio.create_task(logger.log(error_info, typ=4 if e in [ImportError, SyntaxError, ModuleNotFoundError, OSError, FileNotFoundError, MemoryError, ConnectionRefusedError,
+                                                  PermissionError, AssertionError] else 3))
                 except RuntimeError:
                     # 没有运行中的事件循环，创建新的并运行
-                    asyncio.run(logger.log(error_info, typ=3 if type(e) in [ValueError, TypeError, SyntaxError] else 4))
+                    asyncio.run(logger.log(error_info, typ=4 if e in [ImportError, SyntaxError, ModuleNotFoundError, OSError, FileNotFoundError, MemoryError, ConnectionRefusedError,
+                                                  PermissionError, AssertionError] else 3))
                 raise
             finally:
                 del frame  # 释放栈帧，避免内存泄漏

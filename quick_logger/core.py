@@ -19,16 +19,17 @@ os.makedirs(CONFIG_DIR, exist_ok=True)
 # 默认配置（把file里的{time}改为{date}，语义更清晰）
 DEFAULT_CONF = {
     "pattern": "[{time}][{func}][{type}]:{inform}",
-    "file": os.path.join(LOG_ROOT, "{date}.log.txt")
+    "file": os.path.join(LOG_ROOT, "{date}.log.txt"),
+    "enable_color": True
 }
 
 # 初始化配置文件（不存在则创建）
 if not os.path.exists(CONFIG_PATH):
-    with open(CONFIG_PATH, 'w', encoding='cp1252') as f:
+    with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
         json.dump(DEFAULT_CONF, f, indent=4)  # 格式化配置，方便手动修改
 
 # 读取配置
-with open(CONFIG_PATH, 'r', encoding='cp1252') as f:
+with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
     conf = json.load(f)
 
 # 日志级别控制（-O参数启用生产模式，只显示INFO及以上）
@@ -70,22 +71,22 @@ class Logger(object):
         return func_name
 
     def log(self, data, typ=1):
-        # 映射日志级别
         type_map = {0: "DEBUG", 1: "INFO", 2: "WARN", 3: "ERROR", 4: "FATAL"}
         log_type = type_map.get(typ, "DEBUG")
-        
-        # 级别过滤：低于设定级别的日志不输出
+        if conf["enable_color"]:
+            color=COLORS[log_type]
+            rst=RESET
+        else:
+            color=""
+            rst=""
         if typ >= level:
-            # 格式化日志内容
             log_content = self.pattern.format(
                 time=datetime.datetime.now().strftime(r"%Y-%m-%d %H:%M:%S"),
-                func=self._get_real_func_name(),  # 用修复后的真实函数名
+                func=self._get_real_func_name(),
                 type=log_type,
                 inform=data
             )
-            # 终端带颜色输出
-            print(f"{COLORS[log_type]}{log_content}{RESET}")
-            # 文件输出（无颜色，立即刷新避免数据丢失）
+            print(f"{color}{log_content}{rst}")
             print(log_content, file=self.file, flush=True)
 
 # ===================== 装饰器（异常捕获器） =====================
