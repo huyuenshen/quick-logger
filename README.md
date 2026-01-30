@@ -195,3 +195,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contributing
 Issues and pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+> 事实上，对于中国人，其实还可以在CSDN上找到我并提供反馈。
+> 
+> 戳这里前往[本项目的CSDN博客](https://blog.csdn.net/2604_95133377/article/details/157554449?spm=1011.2124.3001.6209)
