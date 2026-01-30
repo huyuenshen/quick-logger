@@ -1,9 +1,9 @@
-# Quick-Datalog
-A lightweight Python logging tool with **colorful terminal output**, **automatic exception capture**, **sync/async support**, and **FATAL log level**. Designed for fast integration in Python projects, supporting log grading and date-based log file splitting.
+# Quick-Logger-Colorful
+A lightweight Python logging tool with **colorful terminal output**(Otherwise, why would it be called Colorful?), **automatic exception capture**, **sync/async support**. Designed for fast integration in Python projects, supporting log grading and date-based log file splitting.
 
-[![PyPI Version](https://img.shields.io/pypi/v/quick-datalog.svg)](https://pypi.org/project/quick-datalog/)
-[![Python Versions](https://img.shields.io/pypi/pyversions/quick-datalog.svg)](https://pypi.org/project/quick-datalog/)
-[![License](https://img.shields.io/pypi/l/quick-datalog.svg)](https://github.com/huyuenshen/quick-datalog/blob/main/LICENSE)
+[![PyPI Version](https://img.shields.io/pypi/v/quick-logger-colorful.svg)](https://pypi.org/project/quick-logger-colorful/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/quick-logger-colorful.svg)](https://pypi.org/project/quick-logger-colorful/)
+[![License](https://img.shields.io/pypi/l/quick-logger-colorful.svg)](https://github.com/huyuenshen/quick-logger/blob/main/LICENSE)
 
 ## Features
 - **Log Grading**: Supports 5 levels - DEBUG(0), INFO(1), WARN(2), ERROR(3), FATAL(4)
@@ -22,14 +22,14 @@ A lightweight Python logging tool with **colorful terminal output**, **automatic
 ## Installation
 ### PyPI Installation (Recommended)
 ```bash
-pip install quick-datalog
+pip install quick-logger-colorful
 ```
 
 ### Local Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/huyuenshen/quick-datalog.git
-   cd quick-datalog
+   git clone https://github.com/huyuenshen/quick-logger.git
+   cd quick-logger
    ```
 2. Install from source:
    ```bash
@@ -39,7 +39,7 @@ pip install quick-datalog
 ## Quick Start
 ### 1. Sync Logging (Core Module)
 ```python
-from quick_datalog import Datalog, start_logger
+from quick_logger import Datalog, start_logger
 
 # Initialize logger
 logger = Datalog()
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 For asynchronous functions, use the `asynclog` module to avoid blocking the event loop:
 ```python
 import asyncio
-from quick_datalog import asynclog
+from quick_logger import asynclog
 
 async def async_test_func():
     logger = asynclog.Datalog()

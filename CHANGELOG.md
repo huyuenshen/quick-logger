@@ -2,6 +2,10 @@
 All notable changes to `quick-datalog` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-01-30
+### Changed
+- ✅ Project name: quick-datalog -> quick-logger-colorful
+
 ## [0.2.0] - 2026-01-09
 ### Added
 - ✅ FATAL log level (type=4) with red background + bold white text for critical error scenarios.
