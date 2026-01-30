@@ -1,6 +1,6 @@
 # quick_datalog/__init__.py
 from .core import *
 
-__version__ = "0.3.2"
+__version__ = "0.3.4"
 __name__ = "quick_logger"
 __author__ = "huyuenshen"

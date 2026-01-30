@@ -1,6 +1,10 @@
 # CHANGELOG.md
-All notable changes to `quick-datalog` will be documented in this file.
+All notable changes to `quick-logger` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.3.4] - 2026-01-30
+### Added
+- Added **blinking effect** to the FATAL level log output for more prominent visual alerts (terminal must support ANSI escape codes).
 
 ## [0.3.0] - 2026-01-30
 ### Changed
