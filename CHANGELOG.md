@@ -2,6 +2,15 @@
 All notable changes to `quick-logger` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.7] - 2026-01-31
+### Fixed
+- ✅ Fixed package configuration error in `setup.cfg` (resolved path matching anomaly of original `packages.find` rule), completely solved "global module import failure" and "running failure in external directories".
+- ✅ Simplified `setup.cfg` configuration logic by removing redundant `packages.find` rules, improved installation stability and reduce future maintenance costs.
+
+### Optimized
+- ✅ Added "Quick Verification After Installation" guide in README to help users quickly confirm the validity of the installation.
+
+
 ## [0.3.6] - 2026-01-30
 ### Fixed
 - ✅ Fixed error: DIR Name in ``asynclog.py`` wrong.
