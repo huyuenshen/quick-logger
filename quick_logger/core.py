@@ -90,28 +90,23 @@ class Logger(object):
             print(log_content, file=self.file, flush=True)
 
 # ===================== 装饰器（异常捕获器） =====================
-def start_logger(func):
-    # 每个装饰器创建独立的logger实例（也可改为单例，按需调整）
-    logger = Logger()
-
-    @wraps(func)  # 保留原函数的__name__、__doc__等元信息
-    def ErrorCatch(*args, **kwargs):
-        # 注入logger到被装饰函数的局部命名空间
-        frame = inspect.currentframe().f_back
-        frame.f_locals["logger"] = logger
-        
-        try:
-            # 执行原函数
-            return func(*args, **kwargs)
-        except Exception as e:
-            # 拼接异常信息（含栈追踪）
-            error_info = f"Function [{func.__name__}] error: {str(e)}"
-            error_info += f"{RESET}\n{traceback.format_exc()}"
-            logger.log(error_info, typ=4 if e in [ImportError, SyntaxError, ModuleNotFoundError, OSError, FileNotFoundError, MemoryError, ConnectionRefusedError,
-                                                  PermissionError, AssertionError] else 3)
-            raise e
-        finally:
-            del frame  # 释放栈帧，避免内存泄漏
-
-    return ErrorCatch
+def start_logger(fatals=[ImportError, SyntaxError, ModuleNotFoundError, OSError, FileNotFoundError, MemoryError, ConnectionRefusedError,PermissionError, AssertionError]):
+    def decorator(func):
+        @wraps(func)
+        def ErrorCatch(*args, **kwargs):
+            logger = Logger()
+            frame = inspect.currentframe().f_back
+            frame.f_locals["logger"] = logger
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                is_fatal = any((isinstance(e, fatal_cls) for fatal_cls in fatals))
+                error_info = f"Function [{func.__name__}] error: "
+                error_info += f"\n{traceback.format_exc()}"
+                logger.log(error_info, typ=4 if is_fatal else 3)
+                raise e
+            finally:
+                del frame
+        return ErrorCatch
+    return decorator
 

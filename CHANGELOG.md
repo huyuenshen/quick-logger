@@ -2,6 +2,12 @@
 All notable changes to `quick-logger` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - Under Development
+### Added
+- ✅ Added Custom ``FATAL`` Errors.
+### Fixed
+- ✅ Fixed strange characters being written to log files (error log format in ``core.py`` and ``asynclog.py``).
+
 ## [0.3.7] - 2026-01-31
 ### Fixed
 - ✅ Fixed package configuration error in `setup.cfg` (resolved path matching anomaly of original `packages.find` rule), completely solved "global module import failure" and "running failure in external directories".

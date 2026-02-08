@@ -95,63 +95,22 @@ class Logger(object):
             await loop.run_in_executor(None, write_to_file)
 
 # ===================== 装饰器（异常捕获器） =====================
-def start_logger(func):
-    # 每个装饰器创建独立的logger实例（也可改为单例，按需调整）
-    logger = Logger()
-    
-    # 检查是否为协程函数
-    if asyncio.iscoroutinefunction(func):
-        # 异步函数装饰器
+def start_logger(fatals=[ImportError, SyntaxError, ModuleNotFoundError, OSError, FileNotFoundError, MemoryError, ConnectionRefusedError,PermissionError, AssertionError]):
+    def decorator(func):
         @wraps(func)
-        async def async_ErrorCatch(*args, **kwargs):
-            # 注入logger到被装饰函数的局部命名空间
+        async def ErrorCatch(*args, **kwargs):
+            logger = Logger()
             frame = inspect.currentframe().f_back
             frame.f_locals["logger"] = logger
-
             try:
-                # 执行原协程函数
                 return await func(*args, **kwargs)
             except Exception as e:
-                # 拼接异常信息（含栈追踪）
-                error_info = f"Function [{func.__name__}] error: {str(e)}"
-                error_info += f"{RESET}\n{traceback.format_exc()}"
-                # 异步记录异常
-                await logger.log(error_info, typ=4 if type(e) in [ImportError, SyntaxError, ModuleNotFoundError, OSError, FileNotFoundError, MemoryError, ConnectionRefusedError,
-                                                  PermissionError, AssertionError] else 3)
-                raise
+                is_fatal = any((isinstance(e, fatal_cls) for fatal_cls in fatals))
+                error_info = f"Function [{func.__name__}] error: "
+                error_info += f"\n{traceback.format_exc()}"
+                await logger.log(error_info, typ=4 if is_fatal else 3)
+                raise e
             finally:
-                del frame  # 释放栈帧，避免内存泄漏
-
-        return async_ErrorCatch
-    else:
-        # 同步函数装饰器（注意：同步函数中使用异步 logger 需要特殊处理）
-        @wraps(func)
-        def sync_ErrorCatch(*args, **kwargs):
-            # 注入logger到被装饰函数的局部命名空间
-            frame = inspect.currentframe().f_back
-            frame.f_locals["logger"] = logger
-
-            try:
-                # 执行原函数
-                return func(*args, **kwargs)
-            except Exception as e:
-                # 拼接异常信息（含栈追踪）
-                error_info = f"Function [{func.__name__}] error: {str(e)}"
-                error_info += f"{RESET}\n{traceback.format_exc()}"
-                # 同步函数中调用异步 log 需要创建事件循环
-                try:
-                    # 尝试获取运行中的事件循环
-                    loop = asyncio.get_running_loop()
-                    # 如果有运行中的循环，创建任务（不等待完成）
-                    asyncio.create_task(logger.log(error_info, typ=4 if e in [ImportError, SyntaxError, ModuleNotFoundError, OSError, FileNotFoundError, MemoryError, ConnectionRefusedError,
-                                                  PermissionError, AssertionError] else 3))
-                except RuntimeError:
-                    # 没有运行中的事件循环，创建新的并运行
-                    asyncio.run(logger.log(error_info, typ=4 if e in [ImportError, SyntaxError, ModuleNotFoundError, OSError, FileNotFoundError, MemoryError, ConnectionRefusedError,
-                                                  PermissionError, AssertionError] else 3))
-                raise
-            finally:
-                del frame  # 释放栈帧，避免内存泄漏
-
-        return sync_ErrorCatch
-
+                del frame
+        return ErrorCatch
+    return decorator
