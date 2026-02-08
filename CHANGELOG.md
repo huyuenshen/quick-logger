@@ -2,7 +2,7 @@
 All notable changes to `quick-logger` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] - Under Development
+## [0.4.0] - 2026-2-8
 ### Added
 - ✅ Added Custom ``FATAL`` Errors.
 ### Fixed
