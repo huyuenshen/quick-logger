@@ -9,18 +9,17 @@ from functools import wraps  # 保留原函数元信息，关键！
 
 # ===================== 路径与配置初始化 =====================
 # 定义路径常量，跨平台兼容
-LOG_ROOT = os.path.join(os.getcwd(), "Logs")
-CONFIG_DIR = os.path.join(LOG_ROOT, ".config")
-CONFIG_PATH = os.path.join(CONFIG_DIR, "Config.json")
+LOG_ROOT = "Logs"
+CONFIG_PATH = ".logconfig.json"
 
 # 自动创建目录（简化写法，exist_ok=True 避免重复创建报错）
 os.makedirs(LOG_ROOT, exist_ok=True)
-os.makedirs(CONFIG_DIR, exist_ok=True)
 
 # 默认配置（把file里的{time}改为{date}，语义更清晰）
 DEFAULT_CONF = {
-    "pattern": "[{time}][{func}][{type}]:{inform}",
-    "file": os.path.join(LOG_ROOT, "{date}.log.txt"),
+    "pattern": "[{time}][{func}/{type}]:{inform}",
+    "log_dir": LOG_ROOT,
+    "file_name": "{date}.log",
     "enable_color": True
 }
 
@@ -32,6 +31,9 @@ if not os.path.exists(CONFIG_PATH):
 # 读取配置
 with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
     conf = json.load(f)
+    if not os.path.exists(conf["log_dir"]):
+        os.makedirs(conf["log_dir"])
+
 
 # 日志级别控制（-O参数启用生产模式，只显示INFO及以上）
 level = 1 if "-O" in sys.argv else 0
@@ -48,30 +50,35 @@ RESET = "\033[0m"  # 重置颜色，避免终端全局变色
 
 # ===================== 日志核心类 =====================
 class Logger(object):
-    def __init__(self, pattern=conf["pattern"], file=conf["file"]):
+    def __init__(self, pattern=conf["pattern"], file=os.path.join(conf["log_dir"],conf["file_name"])):
         self.pattern = pattern
         # 按日期命名日志文件（每天一个文件，避免文件过多）
         date_str = datetime.datetime.now().strftime(r"%Y_%m_%d")
-        self.file_path = file.format(date=date_str)  # 对应配置里的{date}
+        time_str = datetime.datetime.now().strftime(r"%H_%M")
+        self.file_path = file.format(date=date_str, time=time_str)  # 对应配置里的{date}
         # 追加模式打开，UTF-8编码兼容所有字符（如中文）
         self.file = open(self.file_path, "a", encoding="utf-8")
 
     def __del__(self):
-        """析构函数：程序退出时自动关闭文件，防止句柄泄漏"""
+        """On exit"""
         if hasattr(self, "file") and not self.file.closed:
             self.file.close()
 
-    def _get_real_func_name(self):
-        """修复栈帧层级，获取真实的业务函数名（跳过ErrorCatch）"""
+    async def _get_real_func_name(self):
+        """Get Real Function Name"""
         frame = inspect.currentframe()
         # 向上追溯2层：跳过log方法 → 跳过ErrorCatch → 拿到真实函数
         for _ in range(2):
             frame = frame.f_back if frame else None
-        func_name = frame.f_code.co_name if frame else "unknown"
+        func_name = frame.f_code.co_name if frame else "<unknown>"
         del frame  # 释放栈帧，避免内存泄漏
         return func_name
 
-    async def log(self, data, typ=1):
+    async def log(self, inf, typ=1):
+        '''Logger Main Functon.
+            inf: The information to log.
+            typ: The type of log.
+                0: DEBUG, 1: INFO, 2: WARN, 3: ERROR, 4: FATAL'''
         type_map = {0: "DEBUG", 1: "INFO", 2: "WARN", 3: "ERROR", 4: "FATAL"}
         log_type = type_map.get(typ, "DEBUG")
         if conf["enable_color"]:
@@ -82,10 +89,10 @@ class Logger(object):
             rst=""
         if typ >= level:
             log_content = self.pattern.format(
-                time=datetime.datetime.now().strftime(r"%Y-%m-%d %H:%M:%S"),
+                time=datetime.datetime.now().strftime(r"%Y-%m-%d %H:%M:%S.%f"),
                 func=self._get_real_func_name(),
                 type=log_type,
-                inform=data
+                inform=inf
             )
             loop = asyncio.get_running_loop()
             await loop.run_in_executor(None, print, f"{color}{log_content}{rst}")
@@ -93,9 +100,37 @@ class Logger(object):
             def write_to_file():
                 print(log_content, file=self.file, flush=True)
             await loop.run_in_executor(None, write_to_file)
+    async def debug(self,inf):
+        '''Log the informations as DEBUG level.'''
+        await self.log(inf,typ=0)
+    async def info(self,inf):
+        '''Log the informations as INFO level.'''
+        await self.log(inf,typ=1)
+    async def warning(self,inf):
+        '''Log the informations as WARN level.'''
+        await self.log(inf,typ=2)
+    async def warn(self,inf):
+        '''Log the informations as WARN level.'''
+        await self.log(inf,typ=2)
+    async def error(self,inf):
+        '''Log the informations as ERROR level.'''
+        await self.log(inf,typ=3)
+    async def critical(self,inf):
+        '''Log the informations as FATAL level.'''
+        await self.log(inf,typ=4)
+    async def fatal(self,inf):
+        '''Log the informations as FATAL level.'''
+        await self.log(inf,typ=4)
 
 # ===================== 装饰器（异常捕获器） =====================
 def start_logger(fatals=[ImportError, SyntaxError, ModuleNotFoundError, OSError, FileNotFoundError, MemoryError, ConnectionRefusedError,PermissionError, AssertionError]):
+    '''Logger Decorator.
+        fatals: The fatal errors you want to catch.
+            Default: [ImportError, SyntaxError, 
+                      ModuleNotFoundError, OSError, 
+                      FileNotFoundError, MemoryError, 
+                      ConnectionRefusedError,PermissionError, 
+                      AssertionError]'''
     def decorator(func):
         @wraps(func)
         async def ErrorCatch(*args, **kwargs):
@@ -103,7 +138,7 @@ def start_logger(fatals=[ImportError, SyntaxError, ModuleNotFoundError, OSError,
             frame = inspect.currentframe().f_back
             frame.f_locals["logger"] = logger
             try:
-                return await func(*args, **kwargs)
+                return func(*args, **kwargs)
             except Exception as e:
                 is_fatal = any((isinstance(e, fatal_cls) for fatal_cls in fatals))
                 error_info = f"Function [{func.__name__}] error: "

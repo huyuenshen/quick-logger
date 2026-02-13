@@ -2,6 +2,21 @@
 All notable changes to `quick-logger` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - Official Release
+### Added
+- ✅Full support for Python native logging-style method calls: `debug() / info() / warning() / error() / critical() / fatal()`
+- ✅100% backward compatibility, the original `log(inf, typ=...)` syntax remains fully functional
+
+### Optimized
+- ✅Timestamp now supports millisecond display for more precise log timing
+- ✅Asynchronous logger class refactored to achieve true non-blocking async I/O, no longer blocking the event loop
+- ✅Unified behavior of asynchronous/synchronous logging for improved stability
+
+### Fixed
+- ✅Fixed hidden bug where file I/O in async logging blocked the event loop
+- ✅Fixed abnormal log time format issues
+- ✅Fixed potential issues with incorrect function name retrieval in logs
+
 ## [0.4.0] - 2026-2-8
 ### Added
 - ✅ Added Custom ``FATAL`` Errors.
